@@ -10,13 +10,15 @@ function markFieldsDirty<T>(data: T, fields: Record<string, any> = {}) {
 
   if (isObject(data) || isParentNodeArray) {
     for (const key in data) {
+      const value = data[key];
+
       if (
-        Array.isArray(data[key]) ||
-        (isObject(data[key]) && !objectHasFunction(data[key]))
+        Array.isArray(value) ||
+        (isObject(value) && !objectHasFunction(value))
       ) {
-        fields[key] = Array.isArray(data[key]) ? [] : {};
-        markFieldsDirty(data[key], fields[key]);
-      } else if (!isNullOrUndefined(data[key])) {
+        fields[key] = Array.isArray(value) ? [] : {};
+        markFieldsDirty(value, fields[key]);
+      } else if (!isNullOrUndefined(value)) {
         fields[key] = true;
       }
     }
@@ -37,26 +39,29 @@ function getDirtyFieldsFromDefaultValues<T>(
 
   if (isObject(data) || isParentNodeArray) {
     for (const key in data) {
+      const value = data[key];
+
       if (
-        Array.isArray(data[key]) ||
-        (isObject(data[key]) && !objectHasFunction(data[key]))
+        Array.isArray(value) ||
+        (isObject(value) && !objectHasFunction(value))
       ) {
         if (
           isUndefined(formValues) ||
           isPrimitive(dirtyFieldsFromValues[key])
         ) {
-          dirtyFieldsFromValues[key] = Array.isArray(data[key])
-            ? markFieldsDirty(data[key], [])
-            : { ...markFieldsDirty(data[key]) };
+          dirtyFieldsFromValues[key] = Array.isArray(value)
+            ? markFieldsDirty(value, [])
+            : { ...markFieldsDirty(value) };
         } else {
           getDirtyFieldsFromDefaultValues(
-            data[key],
+            value,
             isNullOrUndefined(formValues) ? {} : formValues[key],
             dirtyFieldsFromValues[key],
           );
         }
       } else {
-        dirtyFieldsFromValues[key] = !deepEqual(data[key], formValues[key]);
+        const formValue = formValues[key];
+        dirtyFieldsFromValues[key] = !deepEqual(value, formValue);
       }
     }
   }
